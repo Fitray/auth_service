@@ -19,13 +19,14 @@ func main() {
 		panic(err)
 	}
 
-	logger, err := logger.NewLogger(
+	appLogger, err := logger.NewLogger(
 		config.LoggerConfig,
 		config.ProjectConfig.ProjectRootPath,
 	)
 	if err != nil {
 		panic(err)
 	}
+	defer appLogger.Close()
 
 	postgresConn, err := postgres.NewConnectionPool(config.PostgresConfig)
 	if err != nil {
@@ -43,8 +44,11 @@ func main() {
 	grpcService := service.NewService(grpcRepo)
 	serverApi := handler.NewServerAPI(grpcService)
 
-	server := grpc_server.NewGRPCServer(serverApi)
-	if err := server.Run(config.GRPCConfig); err != nil {
-		fmt.Println(err)
-	}
+	server := grpc_server.NewGRPCServer(
+		serverApi,
+		appLogger.Logger(),
+		config.GRPCConfig,
+	)
+
+	server.Run(config.GRPCConfig)
 }
