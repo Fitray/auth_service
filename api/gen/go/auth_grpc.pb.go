@@ -23,7 +23,6 @@ const (
 	AuthService_Login_FullMethodName               = "/auth.AuthService/Login"
 	AuthService_Refresh_FullMethodName             = "/auth.AuthService/Refresh"
 	AuthService_ValidateAccessToken_FullMethodName = "/auth.AuthService/ValidateAccessToken"
-	AuthService_Authorize_FullMethodName           = "/auth.AuthService/Authorize"
 	AuthService_Logout_FullMethodName              = "/auth.AuthService/Logout"
 )
 
@@ -35,7 +34,6 @@ type AuthServiceClient interface {
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	Refresh(ctx context.Context, in *RefreshRequest, opts ...grpc.CallOption) (*RefreshResponse, error)
 	ValidateAccessToken(ctx context.Context, in *ValidateAccessTokenRequest, opts ...grpc.CallOption) (*ValidateAccessTokenResponse, error)
-	Authorize(ctx context.Context, in *AuthorizeRequest, opts ...grpc.CallOption) (*AuthorizeResponse, error)
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error)
 }
 
@@ -87,16 +85,6 @@ func (c *authServiceClient) ValidateAccessToken(ctx context.Context, in *Validat
 	return out, nil
 }
 
-func (c *authServiceClient) Authorize(ctx context.Context, in *AuthorizeRequest, opts ...grpc.CallOption) (*AuthorizeResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AuthorizeResponse)
-	err := c.cc.Invoke(ctx, AuthService_Authorize_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *authServiceClient) Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(LogoutResponse)
@@ -115,7 +103,6 @@ type AuthServiceServer interface {
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
 	Refresh(context.Context, *RefreshRequest) (*RefreshResponse, error)
 	ValidateAccessToken(context.Context, *ValidateAccessTokenRequest) (*ValidateAccessTokenResponse, error)
-	Authorize(context.Context, *AuthorizeRequest) (*AuthorizeResponse, error)
 	Logout(context.Context, *LogoutRequest) (*LogoutResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
@@ -138,9 +125,6 @@ func (UnimplementedAuthServiceServer) Refresh(context.Context, *RefreshRequest) 
 }
 func (UnimplementedAuthServiceServer) ValidateAccessToken(context.Context, *ValidateAccessTokenRequest) (*ValidateAccessTokenResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ValidateAccessToken not implemented")
-}
-func (UnimplementedAuthServiceServer) Authorize(context.Context, *AuthorizeRequest) (*AuthorizeResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method Authorize not implemented")
 }
 func (UnimplementedAuthServiceServer) Logout(context.Context, *LogoutRequest) (*LogoutResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Logout not implemented")
@@ -238,24 +222,6 @@ func _AuthService_ValidateAccessToken_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AuthService_Authorize_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AuthorizeRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AuthServiceServer).Authorize(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: AuthService_Authorize_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).Authorize(ctx, req.(*AuthorizeRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _AuthService_Logout_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(LogoutRequest)
 	if err := dec(in); err != nil {
@@ -298,12 +264,110 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AuthService_ValidateAccessToken_Handler,
 		},
 		{
-			MethodName: "Authorize",
-			Handler:    _AuthService_Authorize_Handler,
-		},
-		{
 			MethodName: "Logout",
 			Handler:    _AuthService_Logout_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "auth.proto",
+}
+
+const (
+	AuthorizationService_Authorize_FullMethodName = "/auth.AuthorizationService/Authorize"
+)
+
+// AuthorizationServiceClient is the client API for AuthorizationService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type AuthorizationServiceClient interface {
+	Authorize(ctx context.Context, in *AuthorizeRequest, opts ...grpc.CallOption) (*AuthorizeResponse, error)
+}
+
+type authorizationServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewAuthorizationServiceClient(cc grpc.ClientConnInterface) AuthorizationServiceClient {
+	return &authorizationServiceClient{cc}
+}
+
+func (c *authorizationServiceClient) Authorize(ctx context.Context, in *AuthorizeRequest, opts ...grpc.CallOption) (*AuthorizeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AuthorizeResponse)
+	err := c.cc.Invoke(ctx, AuthorizationService_Authorize_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// AuthorizationServiceServer is the server API for AuthorizationService service.
+// All implementations must embed UnimplementedAuthorizationServiceServer
+// for forward compatibility.
+type AuthorizationServiceServer interface {
+	Authorize(context.Context, *AuthorizeRequest) (*AuthorizeResponse, error)
+	mustEmbedUnimplementedAuthorizationServiceServer()
+}
+
+// UnimplementedAuthorizationServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedAuthorizationServiceServer struct{}
+
+func (UnimplementedAuthorizationServiceServer) Authorize(context.Context, *AuthorizeRequest) (*AuthorizeResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Authorize not implemented")
+}
+func (UnimplementedAuthorizationServiceServer) mustEmbedUnimplementedAuthorizationServiceServer() {}
+func (UnimplementedAuthorizationServiceServer) testEmbeddedByValue()                              {}
+
+// UnsafeAuthorizationServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AuthorizationServiceServer will
+// result in compilation errors.
+type UnsafeAuthorizationServiceServer interface {
+	mustEmbedUnimplementedAuthorizationServiceServer()
+}
+
+func RegisterAuthorizationServiceServer(s grpc.ServiceRegistrar, srv AuthorizationServiceServer) {
+	// If the following call panics, it indicates UnimplementedAuthorizationServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&AuthorizationService_ServiceDesc, srv)
+}
+
+func _AuthorizationService_Authorize_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuthorizeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthorizationServiceServer).Authorize(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthorizationService_Authorize_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthorizationServiceServer).Authorize(ctx, req.(*AuthorizeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// AuthorizationService_ServiceDesc is the grpc.ServiceDesc for AuthorizationService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var AuthorizationService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "auth.AuthorizationService",
+	HandlerType: (*AuthorizationServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Authorize",
+			Handler:    _AuthorizationService_Authorize_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

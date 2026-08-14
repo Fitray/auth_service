@@ -9,13 +9,17 @@ service AuthService {
   rpc Login(LoginRequest) returns (LoginResponse);
   rpc Refresh(RefreshRequest) returns (RefreshResponse);
   rpc ValidateAccessToken(ValidateAccessTokenRequest) returns (ValidateAccessTokenResponse);
-  rpc Authorize(AuthorizeRequest) returns (AuthorizeResponse);
   rpc Logout(LogoutRequest) returns (LogoutResponse);
+}
+
+service AuthorizationService {
+  rpc Authorize(AuthorizeRequest) returns (AuthorizeResponse);
 }
 
 message RegisterRequest {
   string login = 1;
   string password = 2;
+  optional string phone_number = 3;
 }
 
 message RegisterResponse {
